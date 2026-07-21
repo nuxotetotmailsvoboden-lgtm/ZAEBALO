@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>NOVA — Telegram Mini App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ===== GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a0f;
+            color: #f0f0ff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a855f7;
+            border-radius: 8px;
+        }
+
+        /* ===== GLASS ===== */
+        .glass {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+        }
+        .glass-light {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* ===== GLOW ===== */
+        .glow-purple {
+            box-shadow: 0 0 60px rgba(168, 85, 247, 0.15), 0 0 120px rgba(168, 85, 247, 0.05);
+        }
+        .glow-pink {
+            box-shadow: 0 0 60px rgba(236, 72, 153, 0.12), 0 0 120px rgba(236, 72, 153, 0.04);
+        }
+        .glow-blue {
+            box-shadow: 0 0 60px rgba(56, 189, 248, 0.10), 0 0 120px rgba(56, 189, 248, 0.03);
+        }
+
+        /* ===== NEON TEXT ===== */
+        .neon-text {
+            background: linear-gradient(135deg, #c084fc 0%, #a855f7 40%, #8b5cf6 70%, #6d28d9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .neon-text-glow {
+            text-shadow: 0 0 40px rgba(168, 85, 247, 0.30), 0 0 80px rgba(168, 85, 247, 0.10);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 14px 32px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 30px rgba(168, 85, 247, 0.30);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+        }
+        .btn-primary:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 50px rgba(168, 85, 247, 0.45);
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: #f0f0ff;
+            font-weight: 500;
+            padding: 14px 32px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            backdrop-filter: blur(8px);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(168, 85, 247, 0.30);
+            transform: scale(1.02);
+        }
+        .btn-secondary:active {
+            transform: scale(0.97);
+        }
+        .btn-ghost {
+            background: transparent;
+            border: none;
+            color: #c4b5d4;
+            font-weight: 500;
+            padding: 10px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #f0f0ff;
+        }
+
+        /* ===== CARDS ===== */
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 24px 20px;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+        .service-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.06), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: rgba(168, 85, 247, 0.25);
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.08);
+        }
+        .service-card:hover::before {
+            opacity: 1;
+        }
+        .service-card .icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            background: rgba(168, 85, 247, 0.12);
+            margin-bottom: 14px;
+            transition: all 0.3s ease;
+        }
+        .service-card:hover .icon-wrap {
+            background: rgba(168, 85, 247, 0.22);
+            transform: scale(1.05);
+        }
+        .service-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #f0f0ff;
+        }
+        .service-card p {
+            font-size: 0.9rem;
+            color: #a8a0b8;
+            line-height: 1.5;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 18px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: rgba(168, 85, 247, 0.20);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: #a8a0b8;
+            margin-top: 2px;
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px 0 env(safe-area-inset-bottom, 8px) 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            height: 72px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            color: #706a80;
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-item .nav-icon {
+            font-size: 22px;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+        .nav-item.active {
+            color: #c084fc;
+        }
+        .nav-item.active .nav-icon {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #a855f7, #7c3aed);
+        }
+        .nav-item:hover {
+            color: #d4c4e8;
+        }
+
+        /* ===== CONSTRUCTOR STEPS ===== */
+        .step-indicator {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin: 20px 0 28px;
+        }
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.4s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            width: 28px;
+            border-radius: 6px;
+            box-shadow: 0 0 24px rgba(168, 85, 247, 0.30);
+        }
+        .step-dot.done {
+            background: rgba(168, 85, 247, 0.40);
+        }
+
+        .option-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.9rem;
+            color: #d0c8e0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+        .option-chip:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(168, 85, 247, 0.20);
+        }
+        .option-chip.selected {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: #a855f7;
+            color: #f0f0ff;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.08);
+        }
+        .option-chip .check {
+            opacity: 0;
+            transition: all 0.25s ease;
+            font-size: 0.8rem;
+        }
+        .option-chip.selected .check {
+            opacity: 1;
+        }
+
+        /* ===== PORTFOLIO CARDS ===== */
+        .portfolio-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        .portfolio-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(168, 85, 247, 0.20);
+            box-shadow: 0 20px 60px rgba(168, 85, 247, 0.06);
+        }
+        .portfolio-card .preview {
+            height: 160px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(99, 102, 241, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: rgba(168, 85, 247, 0.30);
+        }
+        .portfolio-card .info {
+            padding: 16px 18px 20px;
+        }
+        .portfolio-card .info h4 {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 4px;
+        }
+        .portfolio-card .info p {
+            font-size: 0.85rem;
+            color: #a8a0b8;
+            line-height: 1.5;
+        }
+        .portfolio-card .info .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .portfolio-card .info .tags span {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 3px 12px;
+            font-size: 0.7rem;
+            color: #b8b0c8;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* ===== PROFILE ===== */
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 40px rgba(168, 85, 247, 0.25);
+        }
+
+        /* ===== MISC ===== */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+        .section-sub {
+            color: #a8a0b8;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+
+        .bg-glow-orbe {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px 20px 20px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px 14px 20px;
+            }
+            .section-title {
+                font-size: 1.3rem;
+            }
+            .btn-primary,
+            .btn-secondary {
+                padding: 12px 22px;
+                font-size: 0.9rem;
+                width: 100%;
+                justify-content: center;
+            }
+            .stat-card .number {
+                font-size: 1.6rem;
+            }
+            .hero-title {
+                font-size: 1.8rem !important;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+        .float-anim {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-up {
+            animation: fadeUp 0.7s ease forwards;
+        }
+        .fade-up-d1 {
+            animation-delay: 0.05s;
+            opacity: 0;
+        }
+        .fade-up-d2 {
+            animation-delay: 0.12s;
+            opacity: 0;
+        }
+        .fade-up-d3 {
+            animation-delay: 0.20s;
+            opacity: 0;
+        }
+        .fade-up-d4 {
+            animation-delay: 0.28s;
+            opacity: 0;
+        }
+        .fade-up-d5 {
+            animation-delay: 0.36s;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BG GLOW ORBES ===== -->
+    <div class="bg-glow-orbe" style="width:500px;height:500px;top:-120px;right:-80px;background:#6d28d9;opacity:0.12;"></div>
+    <div class="bg-glow-orbe" style="width:400px;height:400px;bottom:100px;left:-100px;background:#7c3aed;opacity:0.08;"></div>
+    <div class="bg-glow-orbe" style="width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%);background:#a855f7;opacity:0.04;"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div id="app" class="content">
+
+        <!-- ===== HEADER ===== -->
+        <header class="flex items-center justify-between py-4 mb-2 fade-up fade-up-d1">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-purple-500/20">
+                    N
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white">NOVA</span>
+            </div>
+            <button id="profileBtn" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg hover:bg-white/10 transition">
+                👤
+            </button>
+        </header>
+
+        <!-- ===== PAGES ===== -->
+        <div id="page-home" class="page">
+
+            <!-- HERO -->
+            <section class="fade-up fade-up-d2">
+                <div class="relative overflow-hidden rounded-3xl glass p-6 md:p-10 glow-purple" style="border-color:rgba(168,85,247,0.10);">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+                    <div class="relative flex flex-col md:flex-row md:items-center gap-6">
+                        <div class="flex-1">
+                            <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm text-purple-300 mb-4">
+                                <span>⚡</span> Telegram Mini App
+                            </div>
+                            <h1 class="hero-title text-3xl md:text-4xl font-bold leading-tight tracking-tight">
+                                Создаём <span class="neon-text neon-text-glow">продающих ботов</span><br />
+                                для вашего бизнеса
+                            </h1>
+                            <p class="text-base md:text-lg text-purple-200/70 mt-3 max-w-md leading-relaxed">
+                                Автоматизация, продажи, рост — в одном Telegram-приложении.
+                                Выберите решение под ваш бизнес за 5 минут.
+                            </p>
+                            <div class="flex flex-wrap gap-3 mt-6">
+                                <button class="btn-primary" id="startBtn">🚀 Начать</button>
+                                <button class="btn-secondary" id="demoBtn">▶ Смотреть демо</button>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center md:justify-end">
+                            <div class="w-32 h-32 md:w-44 md:h-44 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/10 border border-purple-500/20 flex items-center justify-center text-7xl float-anim">
+                                🤖
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATS -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 fade-up fade-up-d3">
+                <div class="stat-card"><div class="number">200+</div><div class="label">готовых решений</div></div>
+                <div class="stat-card"><div class="number">1000+</div><div class="label">довольных клиентов</div></div>
+                <div class="stat-card"><div class="number">50+</div><div class="label">функций в боте</div></div>
+                <div class="stat-card"><div class="number">24/7</div><div class="label">поддержка</div></div>
+            </section>
+
+            <!-- SERVICES -->
+            <section class="mt-10 fade-up fade-up-d4">
+                <h2 class="section-title">Что мы создаём</h2>
+                <p class="section-sub">Выберите тип решения для вашего бизнеса</p>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div class="service-card"><div class="icon-wrap">🤖</div><h3>Telegram Bot</h3><p>Умные боты для продаж и поддержки</p></div>
+                    <div class="service-card"><div class="icon-wrap">📱</div><h3>Mini App</h3><p>Полноценные приложения внутри Telegram</p></div>
+                    <div class="service-card"><div class="icon-wrap">🧠</div><h3>AI Assistant</h3><p>Чат-боты с искусственным интеллектом</p></div>
+                    <div class="service-card"><div class="icon-wrap">📊</div><h3>CRM</h3><p>Системы управления клиентами</p></div>
+                    <div class="service-card"><div class="icon-wrap">⚡</div><h3>Automation</h3><p>Автоматизация бизнес-процессов</p></div>
+                    <div class="service-card"><div class="icon-wrap">🎨</div><h3>UI/UX</h3><p>Премиальный дизайн и анимации</p></div>
+                </div>
+            </section>
+
+            <!-- WHY US -->
+            <section class="mt-10 fade-up fade-up-d5">
+                <h2 class="section-title">Почему NOVA</h2>
+                <p class="section-sub">Преимущества работы с нами</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="glass p-4 flex items-start gap-4">
+                        <span class="text-2xl">💎</span>
+                        <div><h4 class="font-semibold">Индивидуальный подход</h4><p class="text-sm text-purple-200/60">Разрабатываем решение под ваш бизнес</p></div>
+                    </div>
+                    <div class="glass p-4 flex items-start gap-4">
+                        <span class="text-2xl">⚡</span>
+                        <div><h4 class="font-semibold">Быстрые сроки</h4><p class="text-sm text-purple-200/60">От 3 дней до готового продукта</p></div>
+                    </div>
+                    <div class="glass p-4 flex items-start gap-4">
+                        <span class="text-2xl">🛡️</span>
+                        <div><h4 class="font-semibold">Гарантия и безопасность</h4><p class="text-sm text-purple-200/60">Ваши данные под надёжной защитой</p></div>
+                    </div>
+                    <div class="glass p-4 flex items-start gap-4">
+                        <span class="text-2xl">🔄</span>
+                        <div><h4 class="font-semibold">Поддержка 24/7</h4><p class="text-sm text-purple-200/60">Помогаем после запуска</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="mt-10 mb-6">
+                <div class="glass p-6 md:p-8 text-center glow-purple" style="border-color:rgba(168,85,247,0.10);">
+                    <h3 class="text-xl md:text-2xl font-bold">Готовы запустить свой бот?</h3>
+                    <p class="text-purple-200/60 mt-2">Начните прямо сейчас — заполните конструктор за 5 минут</p>
+                    <button class="btn-primary mt-5" id="ctaBtn">🔥 Заказать проект</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== PAGE: CONSTRUCTOR ===== -->
+        <div id="page-constructor" class="page" style="display:none;">
+            <div class="flex items-center gap-3 mb-2">
+                <button id="backHomeBtn" class="btn-ghost text-lg">←</button>
+                <h2 class="text-xl font-bold">Конструктор проекта</h2>
+            </div>
+
+            <!-- Steps indicator -->
+            <div class="step-indicator" id="stepDots">
+                <button class="step-dot active" data-step="0"></button>
+                <button class="step-dot" data-step="1"></button>
+                <button class="step-dot" data-step="2"></button>
+                <button class="step-dot" data-step="3"></button>
+            </div>
+
+            <!-- Step content -->
+            <div id="stepContent" class="glass p-5 md:p-7 glow-purple" style="border-color:rgba(168,85,247,0.06);min-height:380px;">
+
+                <!-- STEP 1: Type -->
+                <div id="step-0" class="step-panel">
+                    <h3 class="text-lg font-semibold mb-1">Шаг 1. Тип проекта</h3>
+                    <p class="text-sm text-purple-200/50 mb-4">Выберите основное направление</p>
+                    <div class="flex flex-wrap gap-2" id="typeOptions">
+                        <button class="option-chip selected" data-type="Telegram Bot">🤖 Telegram Bot</button>
+                        <button class="option-chip" data-type="Mini App">📱 Mini App</button>
+                        <button class="option-chip" data-type="AI Assistant">🧠 AI Assistant</button>
+                        <button class="option-chip" data-type="CRM">📊 CRM</button>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button class="btn-primary step-next" style="padding:10px 28px;font-size:0.9rem;">Далее →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Functions -->
+                <div id="step-1" class="step-panel" style="display:none;">
+                    <h3 class="text-lg font-semibold mb-1">Шаг 2. Функции</h3>
+                    <p class="text-sm text-purple-200/50 mb-4">Отметьте нужные возможности</p>
+                    <div class="flex flex-wrap gap-2" id="funcOptions">
+                        <button class="option-chip" data-func="Авторизация">🔐 Авторизация</button>
+                        <button class="option-chip" data-func="Оплата">💳 Оплата</button>
+                        <button class="option-chip" data-func="Админка">🖥️ Админка</button>
+                        <button class="option-chip" data-func="CRM">📊 CRM</button>
+                        <button class="option-chip" data-func="Рассылка">📨 Рассылка</button>
+                        <button class="option-chip" data-func="Уведомления">🔔 Уведомления</button>
+                        <button class="option-chip" data-func="AI OpenAI">🧠 AI OpenAI</button>
+                        <button class="option-chip" data-func="База данных">🗄️ База данных</button>
+                        <button class="option-chip" data-func="Личный кабинет">👤 Личный кабинет</button>
+                        <button class="option-chip" data-func="Реферальная система">🎁 Реферальная система</button>
+                        <button class="option-chip" data-func="Подписки">📆 Подписки</button>
+                        <button class="option-chip" data-func="API Интеграции">🔗 API Интеграции</button>
+                    </div>
+                    <div class="flex justify-between mt-6">
+                        <button class="btn-ghost step-prev">← Назад</button>
+                        <button class="btn-primary step-next" style="padding:10px 28px;font-size:0.9rem;">Далее →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Design -->
+                <div id="step-2" class="step-panel" style="display:none;">
+                    <h3 class="text-lg font-semibold mb-1">Шаг 3. Дизайн</h3>
+                    <p class="text-sm text-purple-200/50 mb-4">Выберите стиль оформления</p>
+                    <div class="flex flex-wrap gap-2" id="designOptions">
+                        <button class="option-chip selected" data-design="Light">☀️ Light</button>
+                        <button class="option-chip" data-design="Dark">🌙 Dark</button>
+                        <button class="option-chip" data-design="Premium">💎 Premium</button>
+                        <button class="option-chip" data-design="Corporate">🏢 Corporate</button>
+                        <button class="option-chip" data-design="Custom">🎨 Custom</button>
+                    </div>
+                    <div class="flex justify-between mt-6">
+                        <button class="btn-ghost step-prev">← Назад</button>
+                        <button class="btn-primary step-next" style="padding:10px 28px;font-size:0.9rem;">Далее →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Cost -->
+                <div id="step-3" class="step-panel" style="display:none;">
+                    <h3 class="text-lg font-semibold mb-1">Шаг 4. Стоимость</h3>
+                    <p class="text-sm text-purple-200/50 mb-4">Итоговая цена вашего проекта</p>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between py-1 border-b border-white/5"><span>Базовый бот</span><span class="font-medium" id="costBase">40 000 ₽</span></div>
+                        <div class="flex justify-between py-1 border-b border-white/5"><span>Функции (<span id="funcCount">0</span>)</span><span class="font-medium" id="costFuncs">0 ₽</span></div>
+                        <div class="flex justify-between py-1 border-b border-white/5"><span>Дизайн</span><span class="font-medium" id="costDesign">0 ₽</span></div>
+                        <div class="flex justify-between py-1 border-b border-white/5 text-purple-300"><span>Срок</span><span class="font-medium" id="costDeadline">от 5 дней</span></div>
+                        <div class="flex justify-between pt-3 text-lg font-bold"><span>Итого</span><span class="neon-text" id="costTotal">40 000 ₽</span></div>
+                    </div>
+
+                    <div class="mt-5">
+                        <label class="text-sm text-purple-200/60 block mb-1">Описание проекта</label>
+                        <textarea id="projectDesc" rows="3" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-purple-200/30 focus:outline-none focus:border-purple-500/50 transition resize-none" placeholder="Расскажите о вашей идее..."></textarea>
+                    </div>
+
+                    <div class="flex justify-between mt-6">
+                        <button class="btn-ghost step-prev">← Назад</button>
+                        <button class="btn-primary" id="submitRequestBtn" style="padding:10px 28px;font-size:0.9rem;">📨 Отправить заявку</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PAGE: PORTFOLIO ===== -->
+        <div id="page-portfolio" class="page" style="display:none;">
+            <h2 class="text-xl font-bold mb-2">Портфолио</h2>
+            <p class="text-sm text-purple-200/50 mb-4">Наши работы и кейсы</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="portfolio-card">
+                    <div class="preview">🌸</div>
+                    <div class="info">
+                        <h4>Flower Shop</h4>
+                        <p>Интернет-магазин цветов с оплатой и доставкой</p>
+                        <div class="tags"><span>Telegram Bot</span><span>Оплата</span><span>Доставка</span></div>
+                    </div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="preview">🍕</div>
+                    <div class="info">
+                        <h4>Food Delivery</h4>
+                        <p>Доставка еды с каталогом и трекингом заказов</p>
+                        <div class="tags"><span>Mini App</span><span>Карта</span><span>Push</span></div>
+                    </div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="preview">💇</div>
+                    <div class="info">
+                        <h4>Beauty Salon</h4>
+                        <p>Онлайн-запись с календарём и напоминаниями</p>
+                        <div class="tags"><span>Бронирование</span><span>CRM</span><span>Уведомления</span></div>
+                    </div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="preview">🏋️</div>
+                    <div class="info">
+                        <h4>Fitness Club</h4>
+                        <p>Клубная система с расписанием и абонементами</p>
+                        <div class="tags"><span>Подписки</span><span>Календарь</span><span>AI</span></div>
+                    </div>
+                </div>
+            </div>
+            <button id="backFromPortfolio" class="btn-ghost mt-4 text-sm">← На главную</button>
+        </div>
+
+        <!-- ===== PAGE: PROFILE ===== -->
+        <div id="page-profile" class="page" style="display:none;">
+            <div class="flex items-center gap-3 mb-4">
+                <button id="backFromProfile" class="btn-ghost text-lg">←</button>
+                <h2 class="text-xl font-bold">Профиль</h2>
+            </div>
+
+            <div class="glass p-6 glow-purple" style="border-color:rgba(168,85,247,0.06);">
+                <div class="flex items-center gap-5">
+                    <div class="profile-avatar" id="profileAvatar">👤</div>
+                    <div>
+                        <h3 class="text-lg font-semibold" id="profileName">Пользователь</h3>
+                        <p class="text-sm text-purple-200/50" id="profileUsername">@username</p>
+                        <p class="text-xs text-purple-200/30 mt-1" id="profileId">ID: —</p>
+                    </div>
+                </div>
+                <div class="mt-5 pt-4 border-t border-white/5">
+                    <div class="flex justify-between text-sm"><span class="text-purple-200/50">Дата регистрации</span><span id="profileDate">—</span></div>
+                    <div class="flex justify-between text-sm mt-2"><span class="text-purple-200/50">Заявок</span><span id="profileRequests">0</span></div>
+                </div>
+                <button class="btn-secondary w-full mt-5 text-center justify-center" id="logoutBtn" style="padding:10px;font-size:0.9rem;background:rgba(255,50,50,0.05);border-color:rgba(255,50,50,0.10);color:#f87171;">Выйти</button>
+            </div>
+        </div>
+
+        <!-- ===== BOTTOM NAV ===== -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-item active" data-page="home"><span class="nav-icon">🏠</span><span>Главная</span></button>
+            <button class="nav-item" data-page="constructor"><span class="nav-icon">⚙️</span><span>Конструктор</span></button>
+            <button class="nav-item" data-page="portfolio"><span class="nav-icon">📁</span><span>Портфолио</span></button>
+            <button class="nav-item" data-page="profile"><span class="nav-icon">👤</span><span>Профиль</span></button>
+        </nav>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div id="toast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(10,10,15,0.92);backdrop-filter:blur(16px);border:1px solid rgba(168,85,247,0.15);border-radius:16px;padding:14px 28px;color:#f0f0ff;font-size:0.95rem;z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,0.6);display:none;align-items:center;gap:12px;max-width:90%;text-align:center;transition:all 0.3s ease;"></div>
+
+    <script>
+        // ============================================================
+        //  NOVA — Telegram Mini App (Pure JS)
+        //  Full constructor, navigation, Telegram SDK simulation
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // ---------- STATE ----------
+            const state = {
+                page: 'home',
+                step: 0,
+                projectType: 'Telegram Bot',
+                functions: [],
+                design: 'Light',
+                baseCost: 40000,
+                funcCosts: {
+                    'Авторизация': 8000,
+                    'Оплата': 12000,
+                    'Админка': 15000,
+                    'CRM': 15000,
+                    'Рассылка': 8000,
+                    'Уведомления': 6000,
+                    'AI OpenAI': 18000,
+                    'База данных': 12000,
+                    'Личный кабинет': 10000,
+                    'Реферальная система': 12000,
+                    'Подписки': 14000,
+                    'API Интеграции': 10000,
+                },
+                designCosts: {
+                    'Light': 0,
+                    'Dark': 5000,
+                    'Premium': 15000,
+                    'Corporate': 8000,
+                    'Custom': 20000,
+                },
+                user: {
+                    name: 'Алексей',
+                    username: '@alex_dev',
+                    id: '123456789',
+                    registered: '2026-07-22',
+                    requests: 3,
+                }
+            };
+
+            // ---------- DOM REFS ----------
+            const $ = (s) => document.querySelector(s);
+            const $$ = (s) => document.querySelectorAll(s);
+
+            const pages = {
+                home: $('#page-home'),
+                constructor: $('#page-constructor'),
+                portfolio: $('#page-portfolio'),
+                profile: $('#page-profile'),
+            };
+            const navItems = $$('.nav-item');
+            const toastEl = $('#toast');
+
+            // ---------- NAVIGATION ----------
+            function showPage(name) {
+                Object.keys(pages).forEach(k => pages[k].style.display = (k === name) ? 'block' : 'none');
+                state.page = name;
+                navItems.forEach(el => {
+                    el.classList.toggle('active', el.dataset.page === name);
+                });
+                // Telegram SDK simulation: expand
+                if (window.Telegram?.WebApp) {
+                    try { window.Telegram.WebApp.expand(); } catch (e) {}
+                }
+                // scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // ---------- TOAST ----------
+            let toastTimer = null;
+
+            function showToast(msg, duration = 2800) {
+                toastEl.textContent = msg;
+                toastEl.style.display = 'flex';
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toastEl.style.display = 'none';
+                }, duration);
+            }
+
+            // ---------- NAV ITEMS ----------
+            navItems.forEach(el => {
+                el.addEventListener('click', () => {
+                    const page = el.dataset.page;
+                    if (page === 'constructor') {
+                        renderStep(0);
+                    }
+                    showPage(page);
+                });
+            });
+
+            // ---------- PROFILE BUTTON ----------
+            $('#profileBtn').addEventListener('click', () => {
+                showPage('profile');
+                updateProfile();
+            });
+            $('#backFromProfile').addEventListener('click', () => showPage('home'));
+            $('#backFromPortfolio').addEventListener('click', () => showPage('home'));
+            $('#backHomeBtn').addEventListener('click', () => showPage('home'));
+
+            // ---------- CTA / START ----------
+            $('#startBtn').addEventListener('click', () => {
+                showPage('constructor');
+                renderStep(0);
+            });
+            $('#ctaBtn').addEventListener('click', () => {
+                showPage('constructor');
+                renderStep(0);
+            });
+            $('#demoBtn').addEventListener('click', () => {
+                showToast('🎥 Демо-версия откроется в новом окне');
+            });
+
+            // ---------- CONSTRUCTOR: STEP RENDER ----------
+            function renderStep(step) {
+                state.step = step;
+                // dots
+                const dots = $$('.step-dot');
+                dots.forEach((d, i) => {
+                    d.classList.toggle('active', i === step);
+                    d.classList.toggle('done', i < step);
+                });
+                // panels
+                $$('.step-panel').forEach((p, i) => {
+                    p.style.display = (i === step) ? 'block' : 'none';
+                });
+                // update step content
+                if (step === 3) updateCost();
+                // expand
+                if (window.Telegram?.WebApp) {
+                    try { window.Telegram.WebApp.expand(); } catch (e) {}
+                }
+            }
+
+            // ---------- CONSTRUCTOR: STEP NAV ----------
+            document.addEventListener('click', (e) => {
+                const target = e.target.closest('.step-next');
+                if (target) {
+                    const next = state.step + 1;
+                    if (next <= 3) renderStep(next);
+                    return;
+                }
+                const prev = e.target.closest('.step-prev');
+                if (prev) {
+                    const prevStep = state.step - 1;
+                    if (prevStep >= 0) renderStep(prevStep);
+                    return;
+                }
+            });
+
+            // ---------- CONSTRUCTOR: TYPE SELECTION ----------
+            document.querySelectorAll('#typeOptions .option-chip').forEach(el => {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('#typeOptions .option-chip').forEach(c => c.classList.remove(
+                    'selected'));
+                    this.classList.add('selected');
+                    state.projectType = this.dataset.type;
+                });
+            });
+
+            // ---------- CONSTRUCTOR: FUNCTIONS ----------
+            document.querySelectorAll('#funcOptions .option-chip').forEach(el => {
+                el.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const func = this.dataset.func;
+                    if (this.classList.contains('selected')) {
+                        if (!state.functions.includes(func)) state.functions.push(func);
+                    } else {
+                        state.functions = state.functions.filter(f => f !== func);
+                    }
+                    // update cost if on step 3
+                    if (state.step === 3) updateCost();
+                });
+            });
+
+            // ---------- CONSTRUCTOR: DESIGN ----------
+            document.querySelectorAll('#designOptions .option-chip').forEach(el => {
+                el.addEventListener('click', function() {
+                    document.querySelectorAll('#designOptions .option-chip').forEach(c => c.classList.remove(
+                    'selected'));
+                    this.classList.add('selected');
+                    state.design = this.dataset.design;
+                    if (state.step === 3) updateCost();
+                });
+            });
+
+            // ---------- COST CALC ----------
+            function updateCost() {
+                const funcTotal = state.functions.reduce((sum, f) => sum + (state.funcCosts[f] || 0), 0);
+                const designTotal = state.designCosts[state.design] || 0;
+                const total = state.baseCost + funcTotal + designTotal;
+
+                document.getElementById('costBase').textContent = state.baseCost.toLocaleString() + ' ₽';
+                document.getElementById('funcCount').textContent = state.functions.length;
+                document.getElementById('costFuncs').textContent = funcTotal.toLocaleString() + ' ₽';
+                document.getElementById('costDesign').textContent = designTotal.toLocaleString() + ' ₽';
+                document.getElementById('costTotal').textContent = total.toLocaleString() + ' ₽';
+
+                // deadline estimate
+                const days = Math.max(3, 5 + Math.floor(state.functions.length / 3));
+                document.getElementById('costDeadline').textContent = 'от ' + days + ' дней';
+            }
+
+            // ---------- SUBMIT REQUEST ----------
+            document.getElementById('submitRequestBtn').addEventListener('click', function() {
+                const desc = document.getElementById('projectDesc').value.trim() || 'Без описания';
+                const total = document.getElementById('costTotal').textContent;
+
+                // build payload
+                const payload = {
+                    type: state.projectType,
+                    functions: state.functions,
+                    design: state.design,
+                    description: desc,
+                    cost: total,
+                    user: state.user,
+                    timestamp: new Date().toISOString(),
+                };
+
+                // In real app: send to API
+                // For demo: show success
+                console.log('📨 Заявка отправлена:', payload);
+
+                // Show success with Telegram-like haptic
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    try {
+                        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    } catch (e) {}
+                }
+
+                showToast('✅ Заявка отправлена! Мы свяжемся с вами в ближайшее время.', 4000);
+
+                // Reset form (optional)
+                // We keep state for demo
+            });
+
+            // ---------- PROFILE ----------
+            function updateProfile() {
+                const u = state.user;
+                document.getElementById('profileName').textContent = u.name;
+                document.getElementById('profileUsername').textContent = u.username;
+                document.getElementById('profileId').textContent = 'ID: ' + u.id;
+                document.getElementById('profileDate').textContent = u.registered;
+                document.getElementById('profileRequests').textContent = u.requests;
+                document.getElementById('profileAvatar').textContent = u.name.charAt(0).toUpperCase();
+            }
+
+            // ---------- LOGOUT ----------
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    try { window.Telegram.WebApp.HapticFeedback.impactOccurred('light'); } catch (e) {}
+                }
+                showToast('👋 До встречи!');
+                showPage('home');
+            });
+
+            // ---------- TELEGRAM SDK INTEGRATION (simulated) ----------
+            // If running inside Telegram, the SDK will be available.
+            // We simulate basic functionality for web preview.
+
+            // Check if Telegram WebApp is available
+            if (window.Telegram?.WebApp) {
+                try {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready();
+                    tg.expand();
+                    // Use theme params
+                    const theme = tg.themeParams || {};
+                    if (theme.bg_color) {
+                        document.body.style.background = theme.bg_color;
+                    }
+                    // User data
+                    if (tg.initDataUnsafe?.user) {
+                        const user = tg.initDataUnsafe.user;
+                        state.user.name = user.first_name || user.username || 'Пользователь';
+                        state.user.username = user.username ? '@' + user.username : '@user';
+                        state.user.id = user.id || '—';
+                    }
+                    // Haptic feedback
+                    tg.HapticFeedback = tg.HapticFeedback || {
+                        impactOccurred: () => {},
+                        notificationOccurred: () => {},
+                        selectionChanged: () => {},
+                    };
+                    // Main button
+                    tg.MainButton = tg.MainButton || {
+                        show: () => {},
+                        hide: () => {},
+                        setText: () => {},
+                        onClick: () => {},
+                    };
+                    // Back button
+                    tg.BackButton = tg.BackButton || {
+                        show: () => {},
+                        hide: () => {},
+                        onClick: () => {},
+                    };
+                    console.log('✅ Telegram SDK ready');
+                } catch (e) {
+                    console.log('Telegram SDK init warning:', e);
+                }
+            } else {
+                // Simulate Telegram SDK for web preview
+                window.Telegram = window.Telegram || {};
+                window.Telegram.WebApp = {
+                    ready: () => console.log('WebApp ready (sim)'),
+                    expand: () => console.log('Expand (sim)'),
+                    themeParams: { bg_color: '#0a0a0f', text_color: '#f0f0ff' },
+                    initDataUnsafe: { user: { id: 987654, first_name: 'Демо', username: 'demo_user' } },
+                    HapticFeedback: {
+                        impactOccurred: () => console.log('Haptic impact'),
+                        notificationOccurred: () => console.log('Haptic notification'),
+                        selectionChanged: () => console.log('Haptic selection'),
+                    },
+                    MainButton: { show: () => {}, hide: () => {}, setText: () => {}, onClick: () => {} },
+                    BackButton: { show: () => {}, hide: () => {}, onClick: () => {} },
+                };
+                console.log('ℹ️ Telegram SDK simulated for web preview');
+                // Update profile with demo user
+                state.user.name = 'Демо';
+                state.user.username = '@demo_user';
+                state.user.id = '987654';
+                state.user.registered = '2026-07-22';
+                state.user.requests = 2;
+            }
+
+            // ---------- INIT ----------
+            showPage('home');
+            updateProfile();
+            renderStep(0);
+
+            // ---------- KEYBOARD SHORTCUT (dev) ----------
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (state.page !== 'home') showPage('home');
+                }
+            });
+
+            console.log('🚀 NOVA Mini App loaded');
+            console.log('📦 State:', state);
+
+        })();
+    </script>
+
+</body>
+</html>
