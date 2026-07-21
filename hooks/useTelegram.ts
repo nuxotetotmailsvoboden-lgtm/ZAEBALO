@@ -28,7 +28,6 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
           language_code: userData.language_code,
         });
       } else {
-        // Fallback для веб-просмотра
         setUser({
           id: 987654,
           first_name: 'Демо',
@@ -36,13 +35,11 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
         });
       }
 
-      // Хептик
       tg.HapticFeedback = tg.HapticFeedback || {
         impactOccurred: () => {},
         notificationOccurred: () => {},
       };
     } else {
-      // Если не в Telegram (для локальной разработки)
       setUser({
         id: 987654,
         first_name: 'Демо',
@@ -54,7 +51,6 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
   return <>{children}</>;
 };
 
-// Хук для хептика
 export const useHaptic = () => {
   const impact = (style: 'light' | 'medium' | 'heavy' = 'light') => {
     window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(style);
