@@ -18,18 +18,17 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
       tg.ready();
       tg.expand();
 
-      // Получаем данные пользователя
       const userData = tg.initDataUnsafe?.user;
       if (userData) {
         setUser({
           id: userData.id,
-          first_name: userData.first_name || 'Пользователь',
+          first_name: userData.first_name || 'User',
           last_name: userData.last_name,
           username: userData.username,
           language_code: userData.language_code,
         });
       } else {
-        // Если не в Telegram (демо), подставляем тестового
+        // Fallback для веб-просмотра
         setUser({
           id: 987654,
           first_name: 'Демо',
@@ -37,14 +36,13 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
         });
       }
 
-      // Хептик-фидбек (глобально)
+      // Хептик
       tg.HapticFeedback = tg.HapticFeedback || {
         impactOccurred: () => {},
         notificationOccurred: () => {},
       };
     } else {
-      // Симуляция для браузера
-      console.warn('Telegram WebApp not found, using mock');
+      // Если не в Telegram (для локальной разработки)
       setUser({
         id: 987654,
         first_name: 'Демо',
@@ -54,4 +52,15 @@ export const TelegramProvider = ({ children }: { children: React.ReactNode }) =>
   }, [setUser]);
 
   return <>{children}</>;
+};
+
+// Хук для хептика
+export const useHaptic = () => {
+  const impact = (style: 'light' | 'medium' | 'heavy' = 'light') => {
+    window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(style);
+  };
+  const notification = (type: 'success' | 'warning' | 'error' = 'success') => {
+    window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(type);
+  };
+  return { impact, notification };
 };
