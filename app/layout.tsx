@@ -11,11 +11,7 @@ export const metadata: Metadata = {
   description: 'Создаём ботов для бизнеса',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className="dark">
       <body className={inter.className}>
