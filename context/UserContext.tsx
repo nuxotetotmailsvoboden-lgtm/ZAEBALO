@@ -1,9 +1,12 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { TelegramUser, UserState } from '@/types';
+import { TelegramUser } from '@/types';
+import { ADMIN_ID } from '@/lib/constants';
 
-interface UserContextType extends UserState {
+interface UserContextType {
+  user: TelegramUser | null;
+  isAdmin: boolean;
   setUser: (user: TelegramUser | null) => void;
 }
 
@@ -13,25 +16,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<TelegramUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const setUserWithAdmin = (user: TelegramUser | null) => {
-    setUser(user);
-    if (user) {
-      const adminId = Number(process.env.NEXT_PUBLIC_ADMIN_CHAT_ID);
-      setIsAdmin(user.id === adminId);
+  const handleSetUser = (u: TelegramUser | null) => {
+    setUser(u);
+    if (u) {
+      setIsAdmin(u.id === ADMIN_ID);
     } else {
       setIsAdmin(false);
     }
   };
 
   return (
-    <UserContext.Provider value={{ user, isAdmin, setUser: setUserWithAdmin }}>
+    <UserContext.Provider value={{ user, isAdmin, setUser: handleSetUser }}>
       {children}
     </UserContext.Provider>
   );
 };
 
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) throw new Error('useUser must be used within UserProvider');
-  return context;
+  const ctx = useContext(UserContext);
+  if (!ctx) throw new Error('useUser must be used within UserProvider');
+  return ctx;
 };
