@@ -1,3 +1,5 @@
+import { DesignType, ProjectType } from '@/types';
+
 export const ADMIN_ID = Number(process.env.NEXT_PUBLIC_ADMIN_CHAT_ID) || 0;
 
 export const BASE_COST = 40000;
