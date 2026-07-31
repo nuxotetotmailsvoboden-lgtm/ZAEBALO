@@ -1,117 +1,86 @@
 'use client';
 
-import { useState } from 'react';
-import { ProjectType, DesignType } from '@/types';
-import { calculateTotal } from '@/utils/priceCalculator';
-import { submitRequest } from '@/services/api';
+import { useRouter } from 'next/navigation';
+import Header from '@/components/layout/Header';
+import BottomNavigation from '@/components/layout/BottomNavigation';
 import { useUser } from '@/context/UserContext';
 
-interface Props {
-  projectType: ProjectType;
-  functions: string[];
-  design: DesignType;
-  description: string;
-  setDescription: (d: string) => void;
-  onPrev: () => void;
-  showToast: (msg: string) => void;
-  haptic: (style: 'light' | 'medium' | 'heavy') => void;
-  router: any;
-}
-
-export default function StepCost({
-  projectType,
-  functions,
-  design,
-  description,
-  setDescription,
-  onPrev,
-  showToast,
-  haptic,
-  router,
-}: Props) {
-  const { user } = useUser();
-  const [loading, setLoading] = useState(false);
-
-  const total = calculateTotal(projectType, functions, design);
-
-  const handleSubmit = async () => {
-    if (!user) {
-      showToast('❌ Ошибка: пользователь не определён');
-      return;
-    }
-    setLoading(true);
-    try {
-      const payload = {
-        type: projectType,
-        functions,
-        design,
-        description: description.trim() || 'Без описания',
-        cost: total,
-        user,
-        timestamp: new Date().toISOString(),
-      };
-      const result = await submitRequest(payload);
-      if (result.success) {
-        haptic('medium');
-        showToast('✅ Заявка отправлена! Мы свяжемся с вами.');
-        router.push('/');
-      } else {
-        showToast('❌ Ошибка: ' + (result.error || 'попробуйте позже'));
-      }
-    } catch (e: any) {
-      showToast('❌ Ошибка сети: ' + e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function HomePage() {
+  const router = useRouter();
+  const { isAdmin } = useUser();
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold">Шаг 4. Стоимость и заявка</h3>
-      <div className="space-y-2 text-sm mt-3">
-        <div className="flex justify-between py-1 border-b border-white/5">
-          <span>Базовый бот</span>
-          <span className="font-medium">40 000 ₽</span>
-        </div>
-        <div className="flex justify-between py-1 border-b border-white/5">
-          <span>Функции ({functions.length})</span>
-          <span className="font-medium">{calculateTotal(projectType, functions, 'Light') - 40000} ₽</span>
-        </div>
-        <div className="flex justify-between py-1 border-b border-white/5">
-          <span>Дизайн ({design})</span>
-          <span className="font-medium">{total - calculateTotal(projectType, functions, 'Light')} ₽</span>
-        </div>
-        <div className="flex justify-between py-1 border-b border-white/5 text-purple-300">
-          <span>Срок</span>
-          <span className="font-medium">от {Math.max(3, 5 + Math.floor(functions.length / 3))} дней</span>
-        </div>
-        <div className="flex justify-between pt-3 text-lg font-bold">
-          <span>Итого</span>
-          <span className="neon-text">{total.toLocaleString()} ₽</span>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#0a0a0f] text-white px-4 pb-24">
+      <Header />
 
-      <div className="mt-5">
-        <label className="text-sm text-purple-200/60 block mb-1">Описание проекта</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-purple-200/30 focus:outline-none focus:border-purple-500/50 transition resize-none"
-          placeholder="Расскажите о вашей идее..."
-        />
-      </div>
+      {/* Hero — как на картинке */}
+      <section className="mt-6 text-center">
+        <h1 className="text-3xl font-bold">
+          Создаём <span className="text-purple-400">Telegram-ботов</span>
+        </h1>
+        <p className="text-lg text-purple-300/70 mt-1">Которые работают вместо сотрудников</p>
+        <p className="text-sm text-purple-200/50 mt-1 max-w-xs mx-auto">
+          Автоматизируйте бизнес-процессы, увеличивайте продажи и экономьте время с помощью умных ботов
+        </p>
+        <div className="flex justify-center gap-3 mt-5">
+          <button
+            onClick={() => router.push('/constructor')}
+            className="bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm shadow-lg"
+          >
+            Рассчитать стоимость
+          </button>
+          <button className="bg-white/10 text-white px-6 py-2.5 rounded-xl text-sm border border-white/10">
+            Смотреть демо
+          </button>
+        </div>
+      </section>
 
-      <div className="flex justify-between mt-6">
-        <button onClick={onPrev} className="btn-ghost">← Назад</button>
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="btn-primary disabled:opacity-50"
-        >
-          {loading ? 'Отправка...' : '📨 Отправить заявку'}
-        </button>
-      </div>
+      {/* Готовые решения — 4 плитки */}
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold">Готовые решения</h2>
+        <p className="text-sm text-purple-200/50 mb-3">Выберите готового бота для вашего бизнеса</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: '📁', title: 'Портфолио', desc: 'Наши работы и кейсы', path: '/portfolio' },
+            { icon: '⭐', title: 'Отзывы клиентов', desc: 'Реальные отзывы и результаты', path: '/reviews' },
+            { icon: '🤖', title: 'Демо-боты', desc: 'Попробуйте ботов вживую', path: '/demo' },
+            { icon: '🎁', title: 'Акции и бонусы', desc: 'Промокоды, скидки и подарки', path: '/promo' },
+          ].map((item) => (
+            <div
+              key={item.title}
+              onClick={() => router.push(item.path)}
+              className="bg-white/5 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition"
+            >
+              <div className="text-2xl">{item.icon}</div>
+              <div className="font-medium text-sm mt-1">{item.title}</div>
+              <div className="text-xs text-purple-200/50">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Статистика */}
+      <section className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { number: '200+', label: 'готовых решений' },
+          { number: '1000+', label: 'довольных клиентов' },
+          { number: '50+', label: 'функций в боте' },
+          { number: '24/7', label: 'поддержка' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-white/5 rounded-xl p-3 text-center">
+            <div className="text-2xl font-bold text-purple-400">{stat.number}</div>
+            <div className="text-xs text-purple-200/50">{stat.label}</div>
+          </div>
+        ))}
+      </section>
+
+      {isAdmin && (
+        <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-sm text-purple-300 text-center">
+          👑 Вы админ.
+        </div>
+      )}
+
+      <BottomNavigation />
     </div>
   );
 }
